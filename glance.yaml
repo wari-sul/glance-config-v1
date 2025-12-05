@@ -184,7 +184,7 @@ pages:
                 label: "🇯🇵 Tokyo (JST)"
               # UTC - universal reference time for logs and coordination
               - timezone: "UTC"
-                label: "🌐 UTC"
+                label: "🌐 Universal (UTC)"
 
           # ------------------------------------------------------------------
           # ADGUARD DNS STATISTICS WIDGET (LOCAL)
