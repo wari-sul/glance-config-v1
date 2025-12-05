@@ -42,6 +42,12 @@ This repository contains the Glance configuration for AetherLabs, a homelab infr
 └──────────────┴─────────────────────────┴───────────────────────────┘
 ```
 
+### Pages
+
+The dashboard includes two pages:
+
+1. **Home** (`/`): Main overview with local monitoring, entertainment, and remote VPS status
+2. **Infrastructure** (`/infra`): Detailed monitoring with maintenance calendar and custom metrics
 ## 🚀 Quick Start
 
 ### Prerequisites
