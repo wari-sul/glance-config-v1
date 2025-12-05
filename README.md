@@ -100,15 +100,21 @@ This repository contains the Glance configuration for AetherLabs, a homelab infr
 
 For security, use environment variables for sensitive credentials:
 
-| Variable | Description |
-|----------|-------------|
-| `ADGUARD_URL` | AdGuard Home base URL |
-| `ADGUARD_USERNAME` | AdGuard Home username |
-| `ADGUARD_PASSWORD` | AdGuard Home password |
-| `SPOTIFY_CLIENT_ID` | Spotify API client ID |
-| `SPOTIFY_CLIENT_SECRET` | Spotify API client secret |
-| `SPOTIFY_REFRESH_TOKEN` | Spotify OAuth refresh token |
-| `GITHUB_TOKEN` | GitHub personal access token |
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `ADGUARD_URL` | AdGuard Home base URL (e.g., `http://192.168.1.100:3000`) | Yes |
+| `ADGUARD_USERNAME` | AdGuard Home admin username | Yes |
+| `ADGUARD_PASSWORD` | AdGuard Home admin password | Yes |
+| `SPOTIFY_CLIENT_ID` | Spotify API client ID | Yes |
+| `SPOTIFY_CLIENT_SECRET` | Spotify API client secret | Yes |
+| `SPOTIFY_REFRESH_TOKEN` | Spotify OAuth refresh token | Yes |
+| `VPS_EU_URL` | European VPS health endpoint | Yes |
+| `VPS_APAC_URL` | Asia-Pacific VPS health endpoint | Yes |
+| `VPS_NA_URL` | North America VPS health endpoint | Yes |
+| `AUTH_SERVICE_URL` | Authentication service health endpoint | Yes |
+| `ANALYTICS_URL` | Analytics API health endpoint | Yes |
+| `CALENDAR_URL` | iCal/ICS calendar URL | Yes |
+| `GITHUB_TOKEN` | GitHub personal access token (higher API limits) | Optional |
 
 ### Widget Configuration
 

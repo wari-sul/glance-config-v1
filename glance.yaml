@@ -216,12 +216,15 @@ pages:
             # - http://192.168.1.x:3000
             # - http://adguard.local:3000
             # - http://localhost:3000
-            url: "http://192.168.1.100:3000"
-            # Authentication credentials
-            # SECURITY NOTE: Consider using environment variables for credentials
-            # Example: username: ${ADGUARD_USERNAME}
-            username: "admin"
-            password: "your-secure-password-here"
+            #
+            # IMPORTANT: Set these environment variables before deployment:
+            # - ADGUARD_URL: Your AdGuard Home URL
+            # - ADGUARD_USERNAME: Your AdGuard admin username
+            # - ADGUARD_PASSWORD: Your AdGuard admin password
+            url: "${ADGUARD_URL}"
+            # Authentication credentials via environment variables (secure)
+            username: "${ADGUARD_USERNAME}"
+            password: "${ADGUARD_PASSWORD}"
             # Allow insecure SSL connections (self-signed certificates)
             # Set to true if using HTTPS with self-signed certs
             allow-insecure: false
@@ -271,13 +274,20 @@ pages:
             title: "🎵 Now Playing"
             # Spotify API credentials
             # Create an app at: https://developer.spotify.com/dashboard
-            # Replace these placeholder values with your actual credentials
-            client-id: "your-spotify-client-id"
-            client-secret: "your-spotify-client-secret"
-            # OAuth refresh token
-            # Obtain this by completing the Spotify OAuth flow
-            # Reference: https://developer.spotify.com/documentation/general/guides/authorization/
-            refresh-token: "your-spotify-refresh-token"
+            #
+            # IMPORTANT: Set these environment variables before deployment:
+            # - SPOTIFY_CLIENT_ID: Your Spotify app client ID
+            # - SPOTIFY_CLIENT_SECRET: Your Spotify app client secret
+            # - SPOTIFY_REFRESH_TOKEN: OAuth refresh token (obtained via OAuth flow)
+            #
+            # Setup steps:
+            # 1. Create app at https://developer.spotify.com/dashboard
+            # 2. Set redirect URI to http://localhost:8080/callback
+            # 3. Complete OAuth flow to obtain refresh token
+            client-id: "${SPOTIFY_CLIENT_ID}"
+            client-secret: "${SPOTIFY_CLIENT_SECRET}"
+            # OAuth refresh token via environment variable (secure)
+            refresh-token: "${SPOTIFY_REFRESH_TOKEN}"
             # Number of recent tracks to display
             limit: 10
 
@@ -362,6 +372,14 @@ pages:
             title: "🌍 Remote VPS Status"
             # Monitoring configuration
             cache: 5m  # Cache results for 5 minutes
+            #
+            # IMPORTANT: Configure VPS monitoring URLs via environment variables
+            # Set these before deployment:
+            # - VPS_EU_URL: European VPS health endpoint
+            # - VPS_APAC_URL: Asia-Pacific VPS health endpoint
+            # - VPS_NA_URL: North America VPS health endpoint
+            # - AUTH_SERVICE_URL: Authentication service health endpoint
+            # - ANALYTICS_URL: Analytics API health endpoint
             sites:
               # ----------------------------------------------------------
               # VPS Node 1 - Europe (Example: Frankfurt)
@@ -369,7 +387,7 @@ pages:
               # Primary European node for EU traffic
               # Provider: Hetzner/OVH/DigitalOcean
               - title: "🇩🇪 EU Node (Frankfurt)"
-                url: "https://eu-node.example.com/health"
+                url: "${VPS_EU_URL}"
                 icon: "si:hetzner"
                 # Uncomment and set if using basic auth
                 # basic-auth:
@@ -382,7 +400,7 @@ pages:
               # Asia Pacific node for APAC traffic
               # Provider: Vultr/Linode/AWS
               - title: "🇸🇬 APAC Node (Singapore)"
-                url: "https://apac-node.example.com/health"
+                url: "${VPS_APAC_URL}"
                 icon: "si:vultr"
                 
               # ----------------------------------------------------------
@@ -391,7 +409,7 @@ pages:
               # US East node for NA traffic
               # Provider: DigitalOcean/Linode
               - title: "🇺🇸 NA Node (NYC)"
-                url: "https://na-node.example.com/health"
+                url: "${VPS_NA_URL}"
                 icon: "si:digitalocean"
                 
               # ----------------------------------------------------------
@@ -399,11 +417,11 @@ pages:
               # ----------------------------------------------------------
               # Core services that should always be monitored
               - title: "🔐 Auth Service"
-                url: "https://auth.example.com/health"
+                url: "${AUTH_SERVICE_URL}"
                 icon: "si:auth0"
                 
               - title: "📊 Analytics API"
-                url: "https://analytics.example.com/api/health"
+                url: "${ANALYTICS_URL}"
                 icon: "si:grafana"
 
           # ------------------------------------------------------------------
@@ -502,8 +520,11 @@ pages:
             # Examples:
             # - Google Calendar: Right-click calendar > Settings > Secret address
             # - Nextcloud: Share calendar > Copy link
+            #
+            # IMPORTANT: Set CALENDAR_URL environment variable before deployment
+            # This should be your iCal/ICS calendar URL
             calendars:
-              - url: "https://calendar.google.com/calendar/ical/your-calendar-id/public/basic.ics"
+              - url: "${CALENDAR_URL}"
                 name: "Maintenance"
             # Number of upcoming events to display
             limit: 10
@@ -544,23 +565,46 @@ pages:
 # For production deployments, use environment variables for sensitive data.
 # Glance supports environment variable substitution in the format: ${VAR_NAME}
 #
-# Recommended environment variables:
-# - ADGUARD_URL: AdGuard Home base URL
-# - ADGUARD_USERNAME: AdGuard Home username
-# - ADGUARD_PASSWORD: AdGuard Home password
+# Required environment variables for this configuration:
+#
+# AdGuard DNS Integration:
+# - ADGUARD_URL: AdGuard Home base URL (e.g., http://192.168.1.100:3000)
+# - ADGUARD_USERNAME: AdGuard Home admin username
+# - ADGUARD_PASSWORD: AdGuard Home admin password
+#
+# Spotify Integration:
 # - SPOTIFY_CLIENT_ID: Spotify API client ID
 # - SPOTIFY_CLIENT_SECRET: Spotify API client secret
 # - SPOTIFY_REFRESH_TOKEN: Spotify OAuth refresh token
-# - GITHUB_TOKEN: GitHub personal access token
+#
+# VPS Monitoring:
+# - VPS_EU_URL: European VPS health endpoint (e.g., https://eu.example.com/health)
+# - VPS_APAC_URL: Asia-Pacific VPS health endpoint
+# - VPS_NA_URL: North America VPS health endpoint
+# - AUTH_SERVICE_URL: Authentication service health endpoint
+# - ANALYTICS_URL: Analytics API health endpoint
+#
+# Calendar:
+# - CALENDAR_URL: iCal/ICS calendar URL for maintenance schedule
+#
+# Optional:
+# - GITHUB_TOKEN: GitHub personal access token (for higher API rate limits)
 #
 # Example docker-compose.yml environment section:
 # environment:
-#   - ADGUARD_URL=http://adguard:3000
+#   - TZ=America/Los_Angeles
+#   - ADGUARD_URL=http://192.168.1.100:3000
 #   - ADGUARD_USERNAME=admin
 #   - ADGUARD_PASSWORD=${ADGUARD_PASSWORD}
 #   - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID}
 #   - SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET}
 #   - SPOTIFY_REFRESH_TOKEN=${SPOTIFY_REFRESH_TOKEN}
+#   - VPS_EU_URL=https://eu.yourdomain.com/health
+#   - VPS_APAC_URL=https://apac.yourdomain.com/health
+#   - VPS_NA_URL=https://na.yourdomain.com/health
+#   - AUTH_SERVICE_URL=https://auth.yourdomain.com/health
+#   - ANALYTICS_URL=https://analytics.yourdomain.com/health
+#   - CALENDAR_URL=https://calendar.google.com/calendar/ical/xxx/basic.ics
 #
 # ============================================================================
 
