@@ -1,0 +1,636 @@
+# ============================================================================
+# AetherLabs Glance Dashboard Configuration
+# ============================================================================
+# 
+# This configuration file sets up a unified monitoring dashboard for AetherLabs
+# homelab infrastructure, combining local and VPS (Virtual Private Server) nodes
+# distributed globally.
+#
+# Glance is a self-hosted dashboard that consolidates monitoring for various
+# open-source applications and services into a single, clean interface.
+#
+# Reference implementations:
+# - r/selfhosted community configurations
+# - https://github.com/glanceapp/community-widgets
+#
+# Configuration Structure:
+# - server: HTTP server settings
+# - theme: Visual appearance customization
+# - branding: Custom branding elements
+# - pages: Dashboard pages with columns and widgets
+#
+# ============================================================================
+
+# ============================================================================
+# SERVER CONFIGURATION
+# ============================================================================
+# Configure the HTTP server settings for the Glance dashboard.
+# These settings control how the dashboard is accessed and served.
+server:
+  # Port on which Glance will listen for incoming connections
+  # Default: 8080
+  # Note: Ensure this port is not blocked by your firewall
+  port: 8080
+  
+  # Host address to bind the server to
+  # Use 0.0.0.0 to listen on all network interfaces
+  # Use 127.0.0.1 to only allow local connections
+  host: 0.0.0.0
+
+# ============================================================================
+# THEME CONFIGURATION
+# ============================================================================
+# Customize the visual appearance of your dashboard.
+# Glance supports both light and dark modes with extensive color customization.
+theme:
+  # Background color scheme
+  # Options: "dark", "light", or custom hex color
+  background-color: "#1a1a2e"
+  
+  # Primary accent color used for highlights and interactive elements
+  primary-color: "#0f4c75"
+  
+  # Positive/success color for status indicators
+  positive-color: "#3ec300"
+  
+  # Negative/error color for alerts and warnings
+  negative-color: "#ff4757"
+  
+  # Contrast adjustment for better readability
+  # Range: 0.8 (less contrast) to 1.5 (more contrast)
+  contrast-multiplier: 1.1
+
+# ============================================================================
+# BRANDING CONFIGURATION
+# ============================================================================
+# Customize the branding elements displayed on your dashboard.
+branding:
+  # Dashboard title displayed in the browser tab and header
+  title: "AetherLabs Dashboard"
+  
+  # Favicon URL - can be a local path or external URL
+  # favicon: "/assets/favicon.ico"
+  
+  # Custom CSS file for additional styling
+  # custom-css: "/assets/custom.css"
+
+# ============================================================================
+# PAGES CONFIGURATION
+# ============================================================================
+# Define the dashboard pages and their layout.
+# Each page can have multiple columns containing various widgets.
+#
+# Widget Types Available:
+# - weather: Display current weather and forecasts
+# - clock: Show current time in multiple timezones
+# - dns-stats: Monitor AdGuard Home DNS statistics
+# - iframe: Embed external content
+# - calendar: Show upcoming events
+# - monitor: Health checks for services
+# - rss: RSS feed reader
+# - videos: YouTube/video feeds
+# - bookmarks: Quick access links
+# - releases: GitHub release tracker
+# - custom-api: Custom API integrations
+#
+# ============================================================================
+pages:
+  # ==========================================================================
+  # MAIN DASHBOARD PAGE
+  # ==========================================================================
+  # Primary overview page combining all essential monitoring widgets
+  # for both local and remote infrastructure.
+  - name: "Home"
+    slug: ""  # Empty slug means this is the default/home page
+    
+    # Page layout columns
+    # Sizes: "small", "full", "grow"
+    columns:
+      # ========================================================================
+      # LEFT COLUMN - LOCAL NODE MONITORING
+      # ========================================================================
+      # This column contains widgets for monitoring LOCAL infrastructure
+      # running on-premises in the homelab environment.
+      #
+      # Local Node Details:
+      # - Location: Primary homelab server
+      # - Services: AdGuard DNS, local monitoring
+      # - Network: LAN access (192.168.x.x or similar)
+      # ========================================================================
+      - size: small
+        widgets:
+          # ------------------------------------------------------------------
+          # LOCAL WEATHER WIDGET
+          # ------------------------------------------------------------------
+          # Displays current weather conditions and forecasts for your
+          # homelab's physical location. Useful for monitoring environmental
+          # conditions that might affect server performance.
+          #
+          # Configuration Notes:
+          # - location: City name or coordinates for weather data
+          # - units: "metric" (Celsius) or "imperial" (Fahrenheit)
+          # - hide-location: Set to true to hide location name
+          # - show-area-name: Display area/neighborhood name
+          #
+          # API: Uses Open-Meteo API (free, no API key required)
+          # ------------------------------------------------------------------
+          - type: weather
+            title: "Local Weather"
+            # Your homelab location - replace with your actual city
+            # Format: "City, Country" or "City, State, Country"
+            location: "San Francisco, California, USA"
+            # Temperature and measurement units
+            # Options: "metric" (°C, mm) or "imperial" (°F, inches)
+            units: metric
+            # Update interval in minutes (default: 30)
+            # Lower values = more API requests
+            # hour-format: "12h"  # or "24h"
+            
+          # ------------------------------------------------------------------
+          # REAL-TIME CLOCK WIDGET
+          # ------------------------------------------------------------------
+          # Displays current time across multiple timezones.
+          # Essential for managing distributed infrastructure across
+          # different geographic regions.
+          #
+          # Use Cases:
+          # - Coordinate maintenance windows across timezones
+          # - Track when remote VPS nodes are in peak/off-peak hours
+          # - Schedule tasks considering local times
+          #
+          # Configuration Notes:
+          # - timezones: List of timezone identifiers (IANA format)
+          # - hour-format: "12h" or "24h" display format
+          # ------------------------------------------------------------------
+          - type: clock
+            title: "World Time"
+            # Hour format: "12h" (AM/PM) or "24h" (military time)
+            hour-format: "24h"
+            # List of timezones to display
+            # Use IANA timezone database names
+            # Reference: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+            timezones:
+              # Local homelab timezone
+              - timezone: "America/Los_Angeles"
+                label: "🏠 Homelab (PST)"
+              # US East Coast - common for US-based services
+              - timezone: "America/New_York"
+                label: "🗽 NYC (EST)"
+              # Europe - common VPS location
+              - timezone: "Europe/London"
+                label: "🇬🇧 London (GMT)"
+              # Asia - common VPS location
+              - timezone: "Asia/Tokyo"
+                label: "🇯🇵 Tokyo (JST)"
+              # UTC - universal reference time for logs and coordination
+              - timezone: "UTC"
+                label: "🌐 UTC"
+
+          # ------------------------------------------------------------------
+          # ADGUARD DNS STATISTICS WIDGET (LOCAL)
+          # ------------------------------------------------------------------
+          # Monitors your local AdGuard Home instance for DNS statistics.
+          # AdGuard Home is a network-wide ad and tracker blocking DNS server.
+          #
+          # This widget displays:
+          # - Total DNS queries processed
+          # - Queries blocked (ads/trackers)
+          # - Blocking percentage
+          # - Query response times
+          #
+          # Prerequisites:
+          # - AdGuard Home running on your local network
+          # - API access enabled in AdGuard Home settings
+          # - Valid credentials (username/password or API key)
+          #
+          # Configuration Notes:
+          # - url: Base URL of your AdGuard Home instance
+          # - username/password: Admin credentials for API access
+          # - allow-insecure: Set to true for self-signed SSL certificates
+          # ------------------------------------------------------------------
+          - type: dns-stats
+            title: "AdGuard DNS Stats"
+            # AdGuard Home API URL
+            # Replace with your actual AdGuard Home instance URL
+            # Common local addresses:
+            # - http://192.168.1.x:3000
+            # - http://adguard.local:3000
+            # - http://localhost:3000
+            url: "http://192.168.1.100:3000"
+            # Authentication credentials
+            # SECURITY NOTE: Consider using environment variables for credentials
+            # Example: username: ${ADGUARD_USERNAME}
+            username: "admin"
+            password: "your-secure-password-here"
+            # Allow insecure SSL connections (self-signed certificates)
+            # Set to true if using HTTPS with self-signed certs
+            allow-insecure: false
+
+      # ========================================================================
+      # MIDDLE COLUMN - ENTERTAINMENT & MEDIA
+      # ========================================================================
+      # This column focuses on entertainment and media integrations.
+      # Spotify widget shows currently playing music and recent tracks.
+      # ========================================================================
+      - size: full
+        widgets:
+          # ------------------------------------------------------------------
+          # SPOTIFY NOW PLAYING WIDGET
+          # ------------------------------------------------------------------
+          # Integrates with Spotify to display currently playing music
+          # and recent listening history.
+          #
+          # This widget displays:
+          # - Currently playing track (title, artist, album)
+          # - Album artwork
+          # - Playback progress
+          # - Recently played tracks
+          #
+          # Prerequisites:
+          # - Spotify Developer account
+          # - Registered Spotify application with Client ID and Secret
+          # - OAuth authentication completed
+          #
+          # Setup Steps:
+          # 1. Create app at https://developer.spotify.com/dashboard
+          # 2. Set redirect URI to http://localhost:8080/callback
+          # 3. Copy Client ID and Client Secret
+          # 4. Complete OAuth flow to get refresh token
+          #
+          # Configuration Notes:
+          # - client-id: Spotify application Client ID
+          # - client-secret: Spotify application Client Secret
+          # - refresh-token: OAuth refresh token for persistent access
+          # - limit: Number of recent tracks to display
+          #
+          # SECURITY WARNING:
+          # Store sensitive credentials in environment variables or secrets
+          # manager, not directly in this configuration file in production.
+          # ------------------------------------------------------------------
+          - type: spotify
+            title: "🎵 Now Playing"
+            # Spotify API credentials
+            # Create an app at: https://developer.spotify.com/dashboard
+            # Replace these placeholder values with your actual credentials
+            client-id: "your-spotify-client-id"
+            client-secret: "your-spotify-client-secret"
+            # OAuth refresh token
+            # Obtain this by completing the Spotify OAuth flow
+            # Reference: https://developer.spotify.com/documentation/general/guides/authorization/
+            refresh-token: "your-spotify-refresh-token"
+            # Number of recent tracks to display
+            limit: 10
+
+          # ------------------------------------------------------------------
+          # QUICK BOOKMARKS
+          # ------------------------------------------------------------------
+          # Fast access links to frequently used services and tools
+          # Organized by category for easy navigation
+          # ------------------------------------------------------------------
+          - type: bookmarks
+            title: "Quick Links"
+            groups:
+              # Local Services - Homelab applications
+              - title: "🏠 Local Services"
+                color: "#3498db"
+                links:
+                  - title: "AdGuard Home"
+                    url: "http://192.168.1.100:3000"
+                    icon: "si:adguard"
+                  - title: "Portainer"
+                    url: "http://192.168.1.100:9000"
+                    icon: "si:portainer"
+                  - title: "Proxmox"
+                    url: "https://192.168.1.10:8006"
+                    icon: "si:proxmox"
+              # Remote Services - VPS and cloud applications
+              - title: "🌐 Remote Services"
+                color: "#9b59b6"
+                links:
+                  - title: "GitHub"
+                    url: "https://github.com"
+                    icon: "si:github"
+                  - title: "Cloudflare"
+                    url: "https://dash.cloudflare.com"
+                    icon: "si:cloudflare"
+
+      # ========================================================================
+      # RIGHT COLUMN - REMOTE VPS NODE MONITORING
+      # ========================================================================
+      # This column contains widgets for monitoring REMOTE infrastructure
+      # running on VPS (Virtual Private Server) nodes distributed globally.
+      #
+      # Remote Node Overview:
+      # - VPS nodes located in various data centers worldwide
+      # - Services: Web servers, APIs, databases, CDN nodes
+      # - Access: Public IPs, requires secure connections
+      #
+      # Distributed VPS Benefits:
+      # - Geographic redundancy
+      # - Lower latency for global users
+      # - Disaster recovery capabilities
+      # - Load distribution
+      # ========================================================================
+      - size: small
+        widgets:
+          # ------------------------------------------------------------------
+          # SERVICE HEALTH MONITOR (REMOTE NODES)
+          # ------------------------------------------------------------------
+          # Monitors the health and availability of remote VPS services.
+          # Performs periodic HTTP checks and displays status.
+          #
+          # This widget displays:
+          # - Service name and status (up/down)
+          # - Response time
+          # - Last checked timestamp
+          # - Historical uptime data
+          #
+          # Configuration Notes:
+          # - sites: List of services to monitor
+          # - url: Endpoint URL to check
+          # - title: Display name for the service
+          # - icon: Optional icon for visual identification
+          # - allow-insecure: Accept self-signed certificates
+          # - check-interval: How often to check (in minutes)
+          #
+          # Best Practices:
+          # - Use /health or /status endpoints when available
+          # - Set reasonable timeouts to avoid false positives
+          # - Group related services together
+          # ------------------------------------------------------------------
+          - type: monitor
+            title: "🌍 Remote VPS Status"
+            # Monitoring configuration
+            cache: 5m  # Cache results for 5 minutes
+            sites:
+              # ----------------------------------------------------------
+              # VPS Node 1 - Europe (Example: Frankfurt)
+              # ----------------------------------------------------------
+              # Primary European node for EU traffic
+              # Provider: Hetzner/OVH/DigitalOcean
+              - title: "🇩🇪 EU Node (Frankfurt)"
+                url: "https://eu-node.example.com/health"
+                icon: "si:hetzner"
+                # Uncomment and set if using basic auth
+                # basic-auth:
+                #   username: "monitor"
+                #   password: "secure-password"
+                
+              # ----------------------------------------------------------
+              # VPS Node 2 - Asia Pacific (Example: Singapore)
+              # ----------------------------------------------------------
+              # Asia Pacific node for APAC traffic
+              # Provider: Vultr/Linode/AWS
+              - title: "🇸🇬 APAC Node (Singapore)"
+                url: "https://apac-node.example.com/health"
+                icon: "si:vultr"
+                
+              # ----------------------------------------------------------
+              # VPS Node 3 - North America (Example: NYC)
+              # ----------------------------------------------------------
+              # US East node for NA traffic
+              # Provider: DigitalOcean/Linode
+              - title: "🇺🇸 NA Node (NYC)"
+                url: "https://na-node.example.com/health"
+                icon: "si:digitalocean"
+                
+              # ----------------------------------------------------------
+              # Additional Services
+              # ----------------------------------------------------------
+              # Core services that should always be monitored
+              - title: "🔐 Auth Service"
+                url: "https://auth.example.com/health"
+                icon: "si:auth0"
+                
+              - title: "📊 Analytics API"
+                url: "https://analytics.example.com/api/health"
+                icon: "si:grafana"
+
+          # ------------------------------------------------------------------
+          # GITHUB RELEASES TRACKER
+          # ------------------------------------------------------------------
+          # Track new releases of self-hosted applications you depend on.
+          # Helps stay updated on security patches and new features.
+          #
+          # This widget displays:
+          # - Latest release version
+          # - Release date
+          # - Release notes preview
+          # - Link to full changelog
+          #
+          # Configuration Notes:
+          # - repositories: List of GitHub repos to track
+          # - token: Optional GitHub token for private repos
+          # - limit: Number of releases to show per repo
+          # ------------------------------------------------------------------
+          - type: releases
+            title: "📦 Software Updates"
+            # GitHub repositories to track for releases
+            # Format: "owner/repository"
+            repositories:
+              # Self-hosted applications commonly used in homelabs
+              - "glanceapp/glance"        # This dashboard
+              - "AdguardTeam/AdGuardHome" # DNS ad-blocker
+              - "portainer/portainer"      # Container management
+              - "traefik/traefik"          # Reverse proxy
+              - "louislam/uptime-kuma"     # Uptime monitoring
+            # Optional: GitHub personal access token for higher API limits
+            # Uncomment and add token if you hit rate limits
+            # token: "ghp_your_github_token_here"
+            # Show collapsed release notes by default
+            collapse-after: 3
+
+          # ------------------------------------------------------------------
+          # RSS FEED WIDGET
+          # ------------------------------------------------------------------
+          # Stay updated with news from tech and self-hosting communities.
+          # Great for tracking security advisories and new projects.
+          #
+          # Configuration Notes:
+          # - feeds: List of RSS feed URLs
+          # - limit: Number of items per feed
+          # - collapse-after: Collapse list after N items
+          # ------------------------------------------------------------------
+          - type: rss
+            title: "📰 Tech News"
+            # RSS feed URLs
+            feeds:
+              # Self-hosted community news
+              - url: "https://www.reddit.com/r/selfhosted/.rss"
+                title: "r/selfhosted"
+              # Hacker News
+              - url: "https://hnrss.org/frontpage"
+                title: "Hacker News"
+              # Security news
+              - url: "https://feeds.feedburner.com/TheHackersNews"
+                title: "Security News"
+            # Number of items to display
+            limit: 10
+            # Collapse list after this many items
+            collapse-after: 5
+
+  # ==========================================================================
+  # SECONDARY PAGE - DETAILED MONITORING
+  # ==========================================================================
+  # Additional page for detailed infrastructure monitoring and statistics.
+  # Provides deeper insights into system performance and resource usage.
+  - name: "Infrastructure"
+    slug: "infra"
+    
+    columns:
+      # ========================================================================
+      # DETAILED LOCAL MONITORING
+      # ========================================================================
+      # Extended local infrastructure monitoring with more detailed metrics
+      # and additional service integrations.
+      # ========================================================================
+      - size: full
+        widgets:
+          # ------------------------------------------------------------------
+          # CALENDAR INTEGRATION
+          # ------------------------------------------------------------------
+          # Display upcoming maintenance windows and scheduled tasks.
+          # Useful for coordinating team activities and planned downtime.
+          #
+          # Configuration Notes:
+          # - url: iCal/ICS calendar URL (Google Calendar, Nextcloud, etc.)
+          # - limit: Number of upcoming events to show
+          # ------------------------------------------------------------------
+          - type: calendar
+            title: "📅 Maintenance Schedule"
+            # Calendar URL (ICS format)
+            # Examples:
+            # - Google Calendar: Right-click calendar > Settings > Secret address
+            # - Nextcloud: Share calendar > Copy link
+            calendars:
+              - url: "https://calendar.google.com/calendar/ical/your-calendar-id/public/basic.ics"
+                name: "Maintenance"
+            # Number of upcoming events to display
+            limit: 10
+
+          # ------------------------------------------------------------------
+          # CUSTOM API WIDGET EXAMPLE
+          # ------------------------------------------------------------------
+          # Demonstrates how to integrate custom APIs and services.
+          # This is a template for adding your own service integrations.
+          #
+          # Use Cases:
+          # - Custom internal APIs
+          # - IoT sensor data
+          # - Business metrics dashboards
+          # - Third-party service integrations
+          #
+          # Configuration Notes:
+          # - url: API endpoint URL
+          # - headers: Custom HTTP headers (auth tokens, API keys)
+          # - template: Jinja2 template for displaying data
+          # ------------------------------------------------------------------
+          # Uncomment to enable custom API widget
+          # - type: custom-api
+          #   title: "Custom Metrics"
+          #   url: "https://api.example.com/metrics"
+          #   headers:
+          #     Authorization: "Bearer your-api-token"
+          #   template: |
+          #     <div class="custom-metrics">
+          #       <p>CPU: {{ .cpu_usage }}%</p>
+          #       <p>Memory: {{ .memory_usage }}%</p>
+          #       <p>Disk: {{ .disk_usage }}%</p>
+          #     </div>
+
+# ============================================================================
+# ENVIRONMENT VARIABLES REFERENCE
+# ============================================================================
+# For production deployments, use environment variables for sensitive data.
+# Glance supports environment variable substitution in the format: ${VAR_NAME}
+#
+# Recommended environment variables:
+# - ADGUARD_URL: AdGuard Home base URL
+# - ADGUARD_USERNAME: AdGuard Home username
+# - ADGUARD_PASSWORD: AdGuard Home password
+# - SPOTIFY_CLIENT_ID: Spotify API client ID
+# - SPOTIFY_CLIENT_SECRET: Spotify API client secret
+# - SPOTIFY_REFRESH_TOKEN: Spotify OAuth refresh token
+# - GITHUB_TOKEN: GitHub personal access token
+#
+# Example docker-compose.yml environment section:
+# environment:
+#   - ADGUARD_URL=http://adguard:3000
+#   - ADGUARD_USERNAME=admin
+#   - ADGUARD_PASSWORD=${ADGUARD_PASSWORD}
+#   - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID}
+#   - SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET}
+#   - SPOTIFY_REFRESH_TOKEN=${SPOTIFY_REFRESH_TOKEN}
+#
+# ============================================================================
+
+# ============================================================================
+# DEPLOYMENT NOTES
+# ============================================================================
+#
+# Docker Deployment:
+# -----------------
+# docker run -d \
+#   --name glance \
+#   -p 8080:8080 \
+#   -v /path/to/glance.yaml:/app/config/glance.yaml \
+#   glanceapp/glance
+#
+# Docker Compose:
+# ---------------
+# version: '3.8'
+# services:
+#   glance:
+#     image: glanceapp/glance
+#     container_name: glance
+#     ports:
+#       - 8080:8080
+#     volumes:
+#       - ./glance.yaml:/app/config/glance.yaml
+#     environment:
+#       - TZ=America/Los_Angeles
+#     restart: unless-stopped
+#
+# Reverse Proxy (Traefik):
+# ------------------------
+# labels:
+#   - "traefik.enable=true"
+#   - "traefik.http.routers.glance.rule=Host(`dashboard.example.com`)"
+#   - "traefik.http.routers.glance.entrypoints=websecure"
+#   - "traefik.http.routers.glance.tls.certresolver=letsencrypt"
+#
+# ============================================================================
+
+# ============================================================================
+# TROUBLESHOOTING
+# ============================================================================
+#
+# Common Issues:
+#
+# 1. Widgets not loading:
+#    - Check network connectivity to the service
+#    - Verify API credentials are correct
+#    - Check for CORS issues if using custom APIs
+#    - Review Glance container logs: docker logs glance
+#
+# 2. Weather not updating:
+#    - Verify location format is correct
+#    - Open-Meteo API may have rate limits
+#    - Check timezone settings
+#
+# 3. AdGuard stats empty:
+#    - Verify AdGuard Home URL is accessible from Glance container
+#    - Check username/password credentials
+#    - Ensure API is enabled in AdGuard settings
+#
+# 4. Spotify not working:
+#    - Verify OAuth refresh token is valid
+#    - Check Spotify app redirect URI configuration
+#    - Refresh token may have expired - re-authenticate
+#
+# 5. Service monitors showing down:
+#    - Check if URL is accessible from Glance container
+#    - Verify SSL certificates if using HTTPS
+#    - Set allow-insecure: true for self-signed certs
+#
+# ============================================================================
