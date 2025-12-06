@@ -36,15 +36,23 @@
 # ============================================================================
 # Configure the HTTP server settings for the Glance dashboard.
 # These settings control how the dashboard is accessed and served.
+#
+# PUBLIC DEPLOYMENT SECURITY NOTE:
+# This configuration is designed for public remote server deployment.
+# - Use a reverse proxy (Traefik, Caddy, Nginx) with HTTPS
+# - Consider adding authentication via reverse proxy
+# - All sensitive data uses environment variable substitution
+# - Local service URLs should be configured via environment variables
+#   or accessed through VPN/Tailscale tunnels
 server:
   # Port on which Glance will listen for incoming connections
   # Default: 8080
-  # Note: Ensure this port is not blocked by your firewall
+  # Note: When behind a reverse proxy, this can remain 8080
   port: 8080
   
   # Host address to bind the server to
-  # Use 0.0.0.0 to listen on all network interfaces
-  # Use 127.0.0.1 to only allow local connections
+  # Use 0.0.0.0 to listen on all network interfaces (required for Docker/remote)
+  # For public deployment, always use a reverse proxy with HTTPS
   host: 0.0.0.0
 
 # ============================================================================
@@ -413,25 +421,30 @@ pages:
           # Fast access links to frequently used services and tools
           # Organized by category for easy navigation
           # Enhanced grouping adopted from kyrilltje/Glance_Dashboard
+          #
+          # PUBLIC DEPLOYMENT NOTE:
+          # Local service URLs use environment variables since this dashboard
+          # is publicly accessible. Configure these via your deployment
+          # environment or use Tailscale/VPN URLs for internal services.
           # ------------------------------------------------------------------
           - type: bookmarks
             title: "Quick Links"
             groups:
-              # Local Services - Homelab applications
+              # Local Services - Homelab applications (via VPN/Tailscale)
               - title: "🏠 Local Services"
                 color: "#58a6ff"
                 links:
                   - title: "AdGuard Home"
-                    url: "http://192.168.1.100:3000"
+                    url: "${LOCAL_ADGUARD_URL:https://adguard.example.com}"
                     icon: "si:adguard"
                   - title: "Portainer"
-                    url: "http://192.168.1.100:9000"
+                    url: "${LOCAL_PORTAINER_URL:https://portainer.example.com}"
                     icon: "si:portainer"
                   - title: "Proxmox"
-                    url: "https://192.168.1.10:8006"
+                    url: "${LOCAL_PROXMOX_URL:https://proxmox.example.com}"
                     icon: "si:proxmox"
                   - title: "Home Assistant"
-                    url: "http://192.168.1.100:8123"
+                    url: "${LOCAL_HOMEASSISTANT_URL:https://homeassistant.example.com}"
                     icon: "si:homeassistant"
               # Remote Services - VPS and cloud applications
               - title: "🌐 Remote Services"
@@ -1012,10 +1025,17 @@ pages:
 # For production deployments, use environment variables for sensitive data.
 # Glance supports environment variable substitution in the format: ${VAR_NAME}
 #
+# PUBLIC DEPLOYMENT SECURITY:
+# This dashboard is designed for public remote server deployment.
+# - Never expose internal IP addresses in public configurations
+# - Use HTTPS URLs or Tailscale/VPN addresses for local services
+# - All credentials must be set via environment variables
+# - Consider adding reverse proxy authentication (Authelia, Authentik)
+#
 # Required environment variables for this configuration:
 #
 # AdGuard DNS Integration:
-# - ADGUARD_URL: AdGuard Home base URL (e.g., http://192.168.1.100:3000)
+# - ADGUARD_URL: AdGuard Home base URL (use public/VPN URL, not local IP)
 # - ADGUARD_USERNAME: AdGuard Home admin username
 # - ADGUARD_PASSWORD: AdGuard Home admin password
 #
@@ -1034,18 +1054,25 @@ pages:
 # Calendar:
 # - CALENDAR_URL: iCal/ICS calendar URL for maintenance schedule
 #
+# Local Service Bookmarks (for public deployment, use public/VPN URLs):
+# - LOCAL_ADGUARD_URL: Public URL for AdGuard Home (e.g., https://adguard.yourdomain.com)
+# - LOCAL_PORTAINER_URL: Public URL for Portainer (e.g., https://portainer.yourdomain.com)
+# - LOCAL_PROXMOX_URL: Public URL for Proxmox (e.g., https://proxmox.yourdomain.com)
+# - LOCAL_HOMEASSISTANT_URL: Public URL for Home Assistant (e.g., https://ha.yourdomain.com)
+#
 # Optional (Adopted from kyrilltje/Glance_Dashboard):
 # - GITHUB_TOKEN: GitHub personal access token (for higher API rate limits)
-# - PROXMOX_API_URL: Proxmox VE API endpoint (e.g., https://192.168.1.10:8006)
+# - PROXMOX_API_URL: Proxmox VE API endpoint (use public/VPN URL)
 # - PROXMOX_API_TOKEN: Proxmox API token (format: user@realm!tokenid=secret)
 # - GRAFANA_DASHBOARD_URL: Grafana dashboard iframe URL
 # - UPTIME_KUMA_URL: Uptime Kuma instance URL
 # - API_TOKEN: Generic API token for custom integrations
 #
-# Example docker-compose.yml environment section:
+# Example docker-compose.yml environment section (PUBLIC DEPLOYMENT):
 # environment:
 #   - TZ=Asia/Dhaka
-#   - ADGUARD_URL=http://192.168.1.100:3000
+#   # Use public URLs or Tailscale addresses, NOT local IPs
+#   - ADGUARD_URL=https://adguard.yourdomain.com
 #   - ADGUARD_USERNAME=admin
 #   - ADGUARD_PASSWORD=${ADGUARD_PASSWORD}
 #   - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID}
@@ -1058,50 +1085,80 @@ pages:
 #   - ANALYTICS_URL=https://analytics.yourdomain.com/health
 #   - CALENDAR_URL=https://calendar.google.com/calendar/ical/xxx/basic.ics
 #   - GITHUB_TOKEN=${GITHUB_TOKEN}
+#   # Local service bookmarks (use public URLs)
+#   - LOCAL_ADGUARD_URL=https://adguard.yourdomain.com
+#   - LOCAL_PORTAINER_URL=https://portainer.yourdomain.com
+#   - LOCAL_PROXMOX_URL=https://proxmox.yourdomain.com
+#   - LOCAL_HOMEASSISTANT_URL=https://ha.yourdomain.com
 #
 # ============================================================================
 
 # ============================================================================
-# DEPLOYMENT NOTES
+# DEPLOYMENT NOTES (PUBLIC REMOTE SERVER)
 # ============================================================================
 #
-# Docker Deployment:
-# -----------------
+# IMPORTANT: This configuration is designed for PUBLIC deployment.
+# Always use HTTPS and consider adding authentication.
+#
+# Security Recommendations for Public Deployment:
+# -----------------------------------------------
+# 1. Always use a reverse proxy with HTTPS (Let's Encrypt)
+# 2. Add authentication via Authelia, Authentik, or basic auth
+# 3. Use environment variables for ALL sensitive data
+# 4. Never expose internal IP addresses in the configuration
+# 5. Use Tailscale/VPN for accessing local services from public dashboard
+# 6. Regularly update Glance and all dependencies
+#
+# Docker Deployment (behind reverse proxy):
+# -----------------------------------------
 # docker run -d \
 #   --name glance \
-#   -p 8080:8080 \
+#   -p 127.0.0.1:8080:8080 \
 #   -v /path/to/glance.yaml:/app/config/glance.yaml \
 #   -v /var/run/docker.sock:/var/run/docker.sock:ro \
 #   -e TZ=Asia/Dhaka \
 #   glanceapp/glance
 #
-# Docker Compose (with Docker socket for container monitoring):
-# -------------------------------------------------------------
+# Note: Binding to 127.0.0.1 ensures only local access, reverse proxy handles public traffic
+#
+# Docker Compose (Production - Public Deployment):
+# ------------------------------------------------
 # version: '3.8'
 # services:
 #   glance:
 #     image: glanceapp/glance
 #     container_name: glance
+#     # Only expose to localhost, use reverse proxy for public access
 #     ports:
-#       - 8080:8080
+#       - 127.0.0.1:8080:8080
 #     volumes:
 #       - ./glance.yaml:/app/config/glance.yaml
 #       - /var/run/docker.sock:/var/run/docker.sock:ro
 #     environment:
 #       - TZ=Asia/Dhaka
 #     restart: unless-stopped
+#     # Add Traefik labels for automatic HTTPS
+#     labels:
+#       - "traefik.enable=true"
+#       - "traefik.http.routers.glance.rule=Host(`dashboard.yourdomain.com`)"
+#       - "traefik.http.routers.glance.entrypoints=websecure"
+#       - "traefik.http.routers.glance.tls.certresolver=letsencrypt"
 #
-# Reverse Proxy (Traefik):
-# ------------------------
+# Reverse Proxy with Authentication (Traefik + Authelia):
+# -------------------------------------------------------
 # labels:
 #   - "traefik.enable=true"
-#   - "traefik.http.routers.glance.rule=Host(`dashboard.example.com`)"
+#   - "traefik.http.routers.glance.rule=Host(`dashboard.yourdomain.com`)"
 #   - "traefik.http.routers.glance.entrypoints=websecure"
 #   - "traefik.http.routers.glance.tls.certresolver=letsencrypt"
+#   - "traefik.http.routers.glance.middlewares=authelia@docker"
 #
-# Reverse Proxy (Caddy):
-# ----------------------
-# dashboard.example.com {
+# Reverse Proxy (Caddy with Basic Auth):
+# --------------------------------------
+# dashboard.yourdomain.com {
+#   basicauth {
+#     admin $2a$14$... # Use caddy hash-password to generate
+#   }
 #   reverse_proxy glance:8080
 # }
 #

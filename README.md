@@ -4,6 +4,18 @@ A unified monitoring dashboard for AetherLabs homelab infrastructure, designed t
 
 **Configuration patterns adopted from [kyrilltje/Glance_Dashboard](https://github.com/kyrilltje/Glance_Dashboard)**
 
+> ⚠️ **Public Deployment Ready**: This configuration is designed for deployment on a public remote server. All sensitive data uses environment variable substitution, and local service URLs are configurable via environment variables.
+
+## 🔒 Security Considerations (Public Deployment)
+
+Since this dashboard will be publicly accessible:
+
+- **Always use HTTPS** via a reverse proxy (Traefik, Caddy, Nginx)
+- **Add authentication** using Authelia, Authentik, or basic auth
+- **Never hardcode local IP addresses** - use environment variables or public URLs
+- **Use Tailscale/VPN** for accessing internal services from the public dashboard
+- **Keep credentials in environment variables**, never in the config file
+
 ## 🌟 Overview
 
 This repository contains the Glance configuration for AetherLabs, a homelab infrastructure monitoring solution that brings together:
@@ -88,46 +100,56 @@ The dashboard includes three pages:
      - YouTube channel IDs
      - Twitch channel names
 
-3. **Deploy with Docker:**
+3. **Deploy with Docker (for public server):**
    ```bash
+   # Bind to localhost only - use reverse proxy for public access
    docker run -d \
      --name glance \
-     -p 8080:8080 \
+     -p 127.0.0.1:8080:8080 \
      -v $(pwd)/glance.yaml:/app/config/glance.yaml \
      -v /var/run/docker.sock:/var/run/docker.sock:ro \
      -e TZ=Asia/Dhaka \
      glanceapp/glance
    ```
 
-   Or using Docker Compose, create a `docker-compose.yml`:
+   Or using Docker Compose (recommended for production):
    ```yaml
    version: '3.8'
    services:
      glance:
        image: glanceapp/glance
        container_name: glance
+       # Bind to localhost - reverse proxy handles public traffic
        ports:
-         - 8080:8080
+         - 127.0.0.1:8080:8080
        volumes:
          - ./glance.yaml:/app/config/glance.yaml
          - /var/run/docker.sock:/var/run/docker.sock:ro
        environment:
          - TZ=Asia/Dhaka
        restart: unless-stopped
+       # Add Traefik labels for automatic HTTPS
+       labels:
+         - "traefik.enable=true"
+         - "traefik.http.routers.glance.rule=Host(`dashboard.yourdomain.com`)"
+         - "traefik.http.routers.glance.entrypoints=websecure"
+         - "traefik.http.routers.glance.tls.certresolver=letsencrypt"
    ```
 
 4. **Access the dashboard:**
-   Open `http://localhost:8080` in your browser
+   - Local: `http://localhost:8080`
+   - Public: `https://dashboard.yourdomain.com` (after reverse proxy setup)
 
 ## 🔧 Configuration
 
 ### Environment Variables
 
-For security, use environment variables for sensitive credentials:
+For security, use environment variables for sensitive credentials.  
+**⚠️ For public deployment, use HTTPS URLs or Tailscale addresses, NOT local IPs.**
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `ADGUARD_URL` | AdGuard Home base URL (e.g., `http://192.168.1.100:3000`) | Yes |
+| `ADGUARD_URL` | AdGuard Home base URL (use public URL, not local IP) | Yes |
 | `ADGUARD_USERNAME` | AdGuard Home admin username | Yes |
 | `ADGUARD_PASSWORD` | AdGuard Home admin password | Yes |
 | `SPOTIFY_CLIENT_ID` | Spotify API client ID | Yes |
@@ -144,12 +166,16 @@ For security, use environment variables for sensitive credentials:
 | `PROXMOX_API_TOKEN` | Proxmox API token | Optional |
 | `GRAFANA_DASHBOARD_URL` | Grafana dashboard iframe URL | Optional |
 | `UPTIME_KUMA_URL` | Uptime Kuma instance URL | Optional |
+| `LOCAL_ADGUARD_URL` | Public URL for AdGuard Home bookmark | Optional |
+| `LOCAL_PORTAINER_URL` | Public URL for Portainer bookmark | Optional |
+| `LOCAL_PROXMOX_URL` | Public URL for Proxmox bookmark | Optional |
+| `LOCAL_HOMEASSISTANT_URL` | Public URL for Home Assistant bookmark | Optional |
 
 ### Widget Configuration
 
 Detailed configuration instructions are provided as comments within `glance.yaml`. Key sections include:
 
-- **Server Configuration**: Port, host binding
+- **Server Configuration**: Port, host binding, public deployment security
 - **Theme Configuration**: Colors, contrast (dark theme with AetherLabs blue accent)
 - **Widget Configuration**: Individual widget settings
 - **Local Node Monitoring**: AdGuard, weather, clock, system resources
