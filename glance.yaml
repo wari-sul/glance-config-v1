@@ -12,12 +12,22 @@
 # Reference implementations:
 # - r/selfhosted community configurations
 # - https://github.com/glanceapp/community-widgets
+# - https://github.com/kyrilltje/Glance_Dashboard (adopted patterns)
 #
 # Configuration Structure:
 # - server: HTTP server settings
 # - theme: Visual appearance customization
 # - branding: Custom branding elements
 # - pages: Dashboard pages with columns and widgets
+#
+# Adopted Features from kyrilltje/Glance_Dashboard:
+# - System resource monitoring (CPU, RAM, Disk)
+# - Docker container status widgets
+# - Twitch live streams integration
+# - YouTube video feeds
+# - Enhanced Hacker News/Reddit feeds
+# - Markets widget for financial tracking
+# - Improved layout patterns
 #
 # ============================================================================
 
@@ -42,23 +52,28 @@ server:
 # ============================================================================
 # Customize the visual appearance of your dashboard.
 # Glance supports both light and dark modes with extensive color customization.
+# Theme patterns adopted from kyrilltje/Glance_Dashboard with AetherLabs colors.
 theme:
   # Background color scheme
   # Options: "dark", "light", or custom hex color
-  background-color: "#1a1a2e"
+  # Using dark theme for better visibility and reduced eye strain
+  background-color: "#0d1117"
   
   # Primary accent color used for highlights and interactive elements
-  primary-color: "#0f4c75"
+  # AetherLabs signature blue color
+  primary-color: "#58a6ff"
   
   # Positive/success color for status indicators
-  positive-color: "#3ec300"
+  # Green for healthy/online status
+  positive-color: "#3fb950"
   
   # Negative/error color for alerts and warnings
-  negative-color: "#ff4757"
+  # Red for errors/offline status
+  negative-color: "#f85149"
   
   # Contrast adjustment for better readability
   # Range: 0.8 (less contrast) to 1.5 (more contrast)
-  contrast-multiplier: 1.1
+  contrast-multiplier: 1.2
 
 # ============================================================================
 # BRANDING CONFIGURATION
@@ -114,8 +129,13 @@ pages:
       #
       # Local Node Details:
       # - Location: Primary homelab server
-      # - Services: AdGuard DNS, local monitoring
+      # - Services: AdGuard DNS, local monitoring, system stats
       # - Network: LAN access (192.168.x.x or similar)
+      #
+      # Adopted from kyrilltje/Glance_Dashboard:
+      # - System resource widgets (CPU, RAM, Disk)
+      # - Enhanced AdGuard DNS widget
+      # - Clock with Bangladesh timezone focus
       # ========================================================================
       - size: small
         widgets:
@@ -133,18 +153,21 @@ pages:
           # - show-area-name: Display area/neighborhood name
           #
           # API: Uses Open-Meteo API (free, no API key required)
+          # Timezone: Bangladesh (Asia/Dhaka +06)
           # ------------------------------------------------------------------
           - type: weather
             title: "Local Weather"
-            # Your homelab location - replace with your actual city
+            # AetherLabs location - Bangladesh timezone enforced
             # Format: "City, Country" or "City, State, Country"
-            location: "San Francisco, California, USA"
+            location: "Dhaka, Bangladesh"
             # Temperature and measurement units
             # Options: "metric" (°C, mm) or "imperial" (°F, inches)
             units: metric
+            # Show area name for better location context
+            show-area-name: true
             # Update interval in minutes (default: 30)
             # Lower values = more API requests
-            # hour-format: "12h"  # or "24h"
+            # hour-format: "24h"
             
           # ------------------------------------------------------------------
           # REAL-TIME CLOCK WIDGET
@@ -161,6 +184,8 @@ pages:
           # Configuration Notes:
           # - timezones: List of timezone identifiers (IANA format)
           # - hour-format: "12h" or "24h" display format
+          #
+          # Primary timezone: Bangladesh (Asia/Dhaka +06) as per AetherLabs standard
           # ------------------------------------------------------------------
           - type: clock
             title: "World Time"
@@ -170,9 +195,12 @@ pages:
             # Use IANA timezone database names
             # Reference: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
             timezones:
-              # Local homelab timezone
-              - timezone: "America/Los_Angeles"
-                label: "🏠 Homelab (PST)"
+              # Local homelab timezone - Bangladesh (Primary)
+              - timezone: "Asia/Dhaka"
+                label: "🏠 Homelab (BD +06)"
+              # UTC - universal reference time for logs and coordination
+              - timezone: "UTC"
+                label: "🌐 Universal (UTC)"
               # US East Coast - common for US-based services
               - timezone: "America/New_York"
                 label: "🗽 NYC (EST)"
@@ -180,11 +208,8 @@ pages:
               - timezone: "Europe/London"
                 label: "🇬🇧 London (GMT)"
               # Asia - common VPS location
-              - timezone: "Asia/Tokyo"
-                label: "🇯🇵 Tokyo (JST)"
-              # UTC - universal reference time for logs and coordination
-              - timezone: "UTC"
-                label: "🌐 Universal (UTC)"
+              - timezone: "Asia/Singapore"
+                label: "🇸🇬 Singapore (SGT)"
 
           # ------------------------------------------------------------------
           # ADGUARD DNS STATISTICS WIDGET (LOCAL)
@@ -209,7 +234,7 @@ pages:
           # - allow-insecure: Set to true for self-signed SSL certificates
           # ------------------------------------------------------------------
           - type: dns-stats
-            title: "AdGuard DNS Stats"
+            title: "🛡️ AdGuard DNS Stats"
             # AdGuard Home API URL
             # Replace with your actual AdGuard Home instance URL
             # Common local addresses:
@@ -229,11 +254,40 @@ pages:
             # Set to true if using HTTPS with self-signed certs
             allow-insecure: false
 
+          # ------------------------------------------------------------------
+          # SYSTEM RESOURCES WIDGET (ADOPTED FROM KYRILLTJE)
+          # ------------------------------------------------------------------
+          # Displays system resource usage for the local server.
+          # Adopted from kyrilltje/Glance_Dashboard patterns.
+          #
+          # This widget displays:
+          # - CPU usage percentage
+          # - RAM usage percentage  
+          # - Disk usage for primary storage
+          #
+          # Prerequisites:
+          # - Glance must have access to system metrics
+          # - Or configure a metrics endpoint (e.g., Prometheus Node Exporter)
+          #
+          # Configuration Notes:
+          # - cpu: CPU usage monitoring
+          # - memory: RAM usage monitoring
+          # - disk: Disk space monitoring with mount point
+          # ------------------------------------------------------------------
+          - type: system-info
+            title: "💻 System Resources"
+
       # ========================================================================
       # MIDDLE COLUMN - ENTERTAINMENT & MEDIA
       # ========================================================================
       # This column focuses on entertainment and media integrations.
       # Spotify widget shows currently playing music and recent tracks.
+      #
+      # Adopted from kyrilltje/Glance_Dashboard:
+      # - YouTube video feeds
+      # - Twitch live streams
+      # - Enhanced bookmark groups
+      # - Markets widget for financial tracking
       # ========================================================================
       - size: full
         widgets:
@@ -292,17 +346,80 @@ pages:
             limit: 10
 
           # ------------------------------------------------------------------
+          # YOUTUBE VIDEOS WIDGET (ADOPTED FROM KYRILLTJE)
+          # ------------------------------------------------------------------
+          # Displays latest videos from subscribed YouTube channels.
+          # Great for tracking tech channels and self-hosting content creators.
+          #
+          # This widget displays:
+          # - Video thumbnails
+          # - Video titles
+          # - Channel names
+          # - Upload dates
+          #
+          # Configuration Notes:
+          # - channels: List of YouTube channel IDs to track
+          # - limit: Number of videos to display
+          # ------------------------------------------------------------------
+          - type: videos
+            title: "📺 YouTube Videos"
+            # YouTube channels to track (channel IDs or handles)
+            # Popular self-hosting and tech channels
+            channels:
+              # Self-hosting focused channels
+              - UCg6gPGh8HU2U01vaFCAsvmQ  # Techno Tim
+              - UCZNhwA1B5YqiY1nLzmM0ZRg  # Hardware Haven
+              - UCVy16RS5eEDh8anP8j94G2A  # JEAHT
+              - UC2gyzKcHbYfqoXA5xbyGXtQ  # NetworkChuck
+              - UCOk-gHyjcWZNj3Br4oxwh0A  # Craft Computing
+            # Number of videos to display
+            limit: 15
+            # Collapse after this many videos to save space
+            collapse-after: 5
+
+          # ------------------------------------------------------------------
+          # TWITCH STREAMS WIDGET (ADOPTED FROM KYRILLTJE)
+          # ------------------------------------------------------------------
+          # Displays live Twitch streams from followed channels.
+          # Shows currently live streamers and their stream info.
+          #
+          # This widget displays:
+          # - Stream thumbnail
+          # - Streamer name
+          # - Stream title
+          # - Viewer count
+          # - Game/category
+          #
+          # Configuration Notes:
+          # - channels: List of Twitch channel names to track
+          # - collapse-offline: Hide offline channels
+          # ------------------------------------------------------------------
+          - type: twitch-channels
+            title: "🎮 Twitch Streams"
+            # Twitch channels to track
+            # Mix of tech and gaming content
+            channels:
+              - piratesoftware
+              - theprimeagen
+              - tsoding
+              - cohhcarnage
+              - lvndmark
+            # Collapse offline channels to save space
+            collapse-offline: true
+
+          # ------------------------------------------------------------------
           # QUICK BOOKMARKS
           # ------------------------------------------------------------------
           # Fast access links to frequently used services and tools
           # Organized by category for easy navigation
+          # Enhanced grouping adopted from kyrilltje/Glance_Dashboard
           # ------------------------------------------------------------------
           - type: bookmarks
             title: "Quick Links"
             groups:
               # Local Services - Homelab applications
               - title: "🏠 Local Services"
-                color: "#3498db"
+                color: "#58a6ff"
                 links:
                   - title: "AdGuard Home"
                     url: "http://192.168.1.100:3000"
@@ -313,9 +430,12 @@ pages:
                   - title: "Proxmox"
                     url: "https://192.168.1.10:8006"
                     icon: "si:proxmox"
+                  - title: "Home Assistant"
+                    url: "http://192.168.1.100:8123"
+                    icon: "si:homeassistant"
               # Remote Services - VPS and cloud applications
               - title: "🌐 Remote Services"
-                color: "#9b59b6"
+                color: "#a371f7"
                 links:
                   - title: "GitHub"
                     url: "https://github.com"
@@ -323,6 +443,54 @@ pages:
                   - title: "Cloudflare"
                     url: "https://dash.cloudflare.com"
                     icon: "si:cloudflare"
+                  - title: "Vultr"
+                    url: "https://my.vultr.com"
+                    icon: "si:vultr"
+                  - title: "DigitalOcean"
+                    url: "https://cloud.digitalocean.com"
+                    icon: "si:digitalocean"
+              # Tools & Utilities - Development and productivity
+              - title: "🛠️ Tools & Utilities"
+                color: "#3fb950"
+                links:
+                  - title: "VS Code"
+                    url: "https://vscode.dev"
+                    icon: "si:visualstudiocode"
+                  - title: "Docker Hub"
+                    url: "https://hub.docker.com"
+                    icon: "si:docker"
+                  - title: "Reddit"
+                    url: "https://reddit.com/r/selfhosted"
+                    icon: "si:reddit"
+
+          # ------------------------------------------------------------------
+          # MARKETS WIDGET (ADOPTED FROM KYRILLTJE)
+          # ------------------------------------------------------------------
+          # Displays financial market data and cryptocurrency prices.
+          # Useful for tracking investment portfolios.
+          #
+          # This widget displays:
+          # - Stock/crypto prices
+          # - Price changes
+          # - Percentage movement
+          #
+          # Configuration Notes:
+          # - stocks: List of stock symbols to track
+          # - symbols: List of cryptocurrency symbols
+          # ------------------------------------------------------------------
+          - type: markets
+            title: "📈 Markets"
+            markets:
+              - symbol: BTC-USD
+                name: Bitcoin
+              - symbol: ETH-USD
+                name: Ethereum
+              - symbol: AAPL
+                name: Apple
+              - symbol: MSFT
+                name: Microsoft
+              - symbol: NVDA
+                name: NVIDIA
 
       # ========================================================================
       # RIGHT COLUMN - REMOTE VPS NODE MONITORING
@@ -340,6 +508,11 @@ pages:
       # - Lower latency for global users
       # - Disaster recovery capabilities
       # - Load distribution
+      #
+      # Adopted from kyrilltje/Glance_Dashboard:
+      # - Hacker News dedicated widget
+      # - Docker containers monitoring
+      # - Enhanced release tracking
       # ========================================================================
       - size: small
         widgets:
@@ -425,10 +598,36 @@ pages:
                 icon: "si:grafana"
 
           # ------------------------------------------------------------------
+          # HACKER NEWS WIDGET (ADOPTED FROM KYRILLTJE)
+          # ------------------------------------------------------------------
+          # Dedicated widget for Hacker News top stories.
+          # Shows trending tech news and discussions.
+          #
+          # This widget displays:
+          # - Story titles
+          # - Points/score
+          # - Comment count
+          # - Source domain
+          #
+          # Configuration Notes:
+          # - limit: Number of stories to display
+          # - collapse-after: Collapse list after N items
+          # ------------------------------------------------------------------
+          - type: hacker-news
+            title: "🧡 Hacker News"
+            # Number of stories to display
+            limit: 15
+            # Collapse after this many items to save space
+            collapse-after: 5
+            # Sort order: "top", "new", "best"
+            sort-by: top
+
+          # ------------------------------------------------------------------
           # GITHUB RELEASES TRACKER
           # ------------------------------------------------------------------
           # Track new releases of self-hosted applications you depend on.
           # Helps stay updated on security patches and new features.
+          # Enhanced with more repositories from kyrilltje/Glance_Dashboard.
           #
           # This widget displays:
           # - Latest release version
@@ -452,17 +651,22 @@ pages:
               - "portainer/portainer"      # Container management
               - "traefik/traefik"          # Reverse proxy
               - "louislam/uptime-kuma"     # Uptime monitoring
+              - "dani-garcia/vaultwarden"  # Password manager
+              - "linuxserver/docker-wireguard"  # VPN
+              - "immich-app/immich"        # Photo management
+              - "jellyfin/jellyfin"        # Media server
             # Optional: GitHub personal access token for higher API limits
-            # Uncomment and add token if you hit rate limits
-            # token: "ghp_your_github_token_here"
+            # IMPORTANT: Set GITHUB_TOKEN environment variable before deployment
+            # token: "${GITHUB_TOKEN}"
             # Show collapsed release notes by default
             collapse-after: 3
 
           # ------------------------------------------------------------------
-          # RSS FEED WIDGET
+          # RSS FEED WIDGET (ENHANCED)
           # ------------------------------------------------------------------
           # Stay updated with news from tech and self-hosting communities.
           # Great for tracking security advisories and new projects.
+          # Enhanced feed list adopted from kyrilltje/Glance_Dashboard.
           #
           # Configuration Notes:
           # - feeds: List of RSS feed URLs
@@ -476,15 +680,41 @@ pages:
               # Self-hosted community news
               - url: "https://www.reddit.com/r/selfhosted/.rss"
                 title: "r/selfhosted"
-              # Hacker News
-              - url: "https://hnrss.org/frontpage"
-                title: "Hacker News"
+              # Homelab subreddit
+              - url: "https://www.reddit.com/r/homelab/.rss"
+                title: "r/homelab"
               # Security news
               - url: "https://feeds.feedburner.com/TheHackersNews"
                 title: "Security News"
+              # Ars Technica
+              - url: "https://feeds.arstechnica.com/arstechnica/index"
+                title: "Ars Technica"
             # Number of items to display
-            limit: 10
+            limit: 15
             # Collapse list after this many items
+            collapse-after: 5
+
+          # ------------------------------------------------------------------
+          # REDDIT WIDGET (ADOPTED FROM KYRILLTJE)
+          # ------------------------------------------------------------------
+          # Dedicated Reddit widget for specific subreddit monitoring.
+          # Shows hot posts from selected subreddits.
+          #
+          # Configuration Notes:
+          # - subreddit: Subreddit name to monitor
+          # - limit: Number of posts to display
+          # - show-thumbnails: Display post thumbnails
+          # ------------------------------------------------------------------
+          - type: reddit
+            title: "💬 Reddit - r/selfhosted"
+            subreddit: selfhosted
+            # Number of posts to display
+            limit: 10
+            # Sort: hot, new, top
+            sort-by: hot
+            # Show post thumbnails
+            show-thumbnails: true
+            # Collapse after this many posts
             collapse-after: 5
 
   # ==========================================================================
@@ -492,15 +722,114 @@ pages:
   # ==========================================================================
   # Additional page for detailed infrastructure monitoring and statistics.
   # Provides deeper insights into system performance and resource usage.
+  #
+  # Adopted from kyrilltje/Glance_Dashboard:
+  # - Multi-column layout with Docker containers
+  # - Extended calendar integration
+  # - Search widget
+  # - Iframe embeds for external dashboards
+  # ==========================================================================
   - name: "Infrastructure"
     slug: "infra"
     
     columns:
       # ========================================================================
-      # DETAILED LOCAL MONITORING
+      # LEFT COLUMN - CONTAINERS & SERVICES
       # ========================================================================
-      # Extended local infrastructure monitoring with more detailed metrics
-      # and additional service integrations.
+      # Docker container monitoring and service status
+      # Adopted from kyrilltje/Glance_Dashboard patterns
+      # ========================================================================
+      - size: small
+        widgets:
+          # ------------------------------------------------------------------
+          # DOCKER CONTAINERS WIDGET (ADOPTED FROM KYRILLTJE)
+          # ------------------------------------------------------------------
+          # Monitors Docker container status and health.
+          # Shows running, stopped, and unhealthy containers.
+          #
+          # This widget displays:
+          # - Container name
+          # - Status (running/stopped/unhealthy)
+          # - Uptime
+          # - Resource usage
+          #
+          # Prerequisites:
+          # - Docker socket access (/var/run/docker.sock)
+          # - Glance container must have socket mounted
+          #
+          # Configuration Notes:
+          # - socket: Docker socket path
+          # - hide-header: Hide widget header
+          # ------------------------------------------------------------------
+          - type: docker-containers
+            title: "🐳 Docker Containers"
+            # Docker socket path for container monitoring
+            # Mount in docker-compose:
+            # volumes:
+            #   - /var/run/docker.sock:/var/run/docker.sock:ro
+            socket: /var/run/docker.sock
+
+          # ------------------------------------------------------------------
+          # SEARCH WIDGET (ADOPTED FROM KYRILLTJE)
+          # ------------------------------------------------------------------
+          # Quick search bar with multiple search engine support.
+          # Useful for quick lookups without leaving the dashboard.
+          #
+          # Configuration Notes:
+          # - search-engine: Default search engine URL
+          # - bangs: Custom search shortcuts
+          # ------------------------------------------------------------------
+          - type: search
+            title: "🔍 Search"
+            # Default search engine
+            search-engine: https://duckduckgo.com/?q={QUERY}
+            # Custom search bangs
+            bangs:
+              - title: Google
+                shortcut: "!g"
+                url: https://www.google.com/search?q={QUERY}
+              - title: YouTube
+                shortcut: "!yt"
+                url: https://www.youtube.com/results?search_query={QUERY}
+              - title: GitHub
+                shortcut: "!gh"
+                url: https://github.com/search?q={QUERY}
+              - title: Reddit
+                shortcut: "!r"
+                url: https://www.reddit.com/search/?q={QUERY}
+              - title: Docker Hub
+                shortcut: "!dh"
+                url: https://hub.docker.com/search?q={QUERY}
+
+          # ------------------------------------------------------------------
+          # PROXMOX MONITORING (AETHERLABS SPECIFIC)
+          # ------------------------------------------------------------------
+          # Monitor Proxmox cluster nodes and VMs.
+          # Using custom API widget for Proxmox integration.
+          #
+          # Prerequisites:
+          # - Proxmox API token
+          # - Network access to Proxmox API
+          #
+          # Note: Uncomment and configure for your Proxmox setup
+          # ------------------------------------------------------------------
+          # - type: custom-api
+          #   title: "📦 Proxmox Cluster"
+          #   url: "${PROXMOX_API_URL}/api2/json/cluster/status"
+          #   headers:
+          #     Authorization: "PVEAPIToken=${PROXMOX_API_TOKEN}"
+          #   allow-insecure: true
+          #   template: |
+          #     <div class="proxmox-status">
+          #       {{ range .data }}
+          #         <p>{{ .name }}: {{ .status }}</p>
+          #       {{ end }}
+          #     </div>
+
+      # ========================================================================
+      # MIDDLE COLUMN - SCHEDULES & EVENTS
+      # ========================================================================
+      # Calendar, maintenance windows, and scheduled tasks
       # ========================================================================
       - size: full
         widgets:
@@ -530,10 +859,72 @@ pages:
             limit: 10
 
           # ------------------------------------------------------------------
-          # CUSTOM API WIDGET EXAMPLE
+          # IFRAME WIDGET - EXTERNAL DASHBOARD (ADOPTED FROM KYRILLTJE)
           # ------------------------------------------------------------------
-          # Demonstrates how to integrate custom APIs and services.
-          # This is a template for adding your own service integrations.
+          # Embed external dashboards or monitoring tools.
+          # Useful for integrating Grafana, Prometheus, or other dashboards.
+          #
+          # Configuration Notes:
+          # - url: URL of external dashboard
+          # - height: Height of iframe in pixels
+          # - allow-insecure: Accept self-signed certificates
+          #
+          # Note: Uncomment and configure for your setup
+          # ------------------------------------------------------------------
+          # - type: iframe
+          #   title: "📊 Grafana Dashboard"
+          #   source: "${GRAFANA_DASHBOARD_URL}"
+          #   height: 400
+
+          # ------------------------------------------------------------------
+          # CUSTOM API WIDGET - UPTIME KUMA (ADOPTED FROM KYRILLTJE)
+          # ------------------------------------------------------------------
+          # Integration with Uptime Kuma for detailed uptime monitoring.
+          # Shows service status, response times, and uptime percentages.
+          #
+          # Configuration Notes:
+          # - url: Uptime Kuma API endpoint
+          # - headers: API key for authentication
+          #
+          # Note: Uncomment and configure for your Uptime Kuma instance
+          # ------------------------------------------------------------------
+          # - type: custom-api
+          #   title: "📈 Uptime Kuma"
+          #   url: "${UPTIME_KUMA_URL}/api/status-page/main"
+          #   template: |
+          #     {{ range .monitors }}
+          #       <p>{{ .name }}: {{ .avgPing }}ms ({{ .uptime }}%)</p>
+          #     {{ end }}
+
+      # ========================================================================
+      # RIGHT COLUMN - SYSTEM METRICS & LOGS
+      # ========================================================================
+      # Detailed system metrics and log viewing
+      # ========================================================================
+      - size: small
+        widgets:
+          # ------------------------------------------------------------------
+          # EXTENSION: CHANGELOG WIDGET (ADOPTED FROM KYRILLTJE)
+          # ------------------------------------------------------------------
+          # Track changes and updates to your infrastructure.
+          # Useful for keeping track of recent modifications.
+          # ------------------------------------------------------------------
+          - type: releases
+            title: "🔄 Infrastructure Updates"
+            repositories:
+              # Core infrastructure tools
+              - "docker/compose"
+              - "kubernetes/kubernetes"
+              - "hashicorp/terraform"
+              - "ansible/ansible"
+              - "containerd/containerd"
+            collapse-after: 3
+
+          # ------------------------------------------------------------------
+          # CUSTOM API WIDGET TEMPLATE
+          # ------------------------------------------------------------------
+          # Template for custom API integrations.
+          # Adapt for your specific monitoring needs.
           #
           # Use Cases:
           # - Custom internal APIs
@@ -544,20 +935,76 @@ pages:
           # Configuration Notes:
           # - url: API endpoint URL
           # - headers: Custom HTTP headers (auth tokens, API keys)
-          # - template: Jinja2 template for displaying data
+          # - template: Go template for displaying data
           # ------------------------------------------------------------------
           # Uncomment to enable custom API widget
           # - type: custom-api
           #   title: "Custom Metrics"
           #   url: "https://api.example.com/metrics"
           #   headers:
-          #     Authorization: "Bearer your-api-token"
+          #     Authorization: "Bearer ${API_TOKEN}"
           #   template: |
           #     <div class="custom-metrics">
           #       <p>CPU: {{ .cpu_usage }}%</p>
           #       <p>Memory: {{ .memory_usage }}%</p>
           #       <p>Disk: {{ .disk_usage }}%</p>
           #     </div>
+
+  # ==========================================================================
+  # TERTIARY PAGE - MEDIA & ENTERTAINMENT
+  # ==========================================================================
+  # Dedicated page for media-focused content
+  # Adopted from kyrilltje/Glance_Dashboard patterns
+  # ==========================================================================
+  - name: "Media"
+    slug: "media"
+    
+    columns:
+      # ========================================================================
+      # VIDEO CONTENT
+      # ========================================================================
+      - size: full
+        widgets:
+          # ------------------------------------------------------------------
+          # YOUTUBE SUBSCRIPTIONS (EXPANDED VIEW)
+          # ------------------------------------------------------------------
+          - type: videos
+            title: "📺 YouTube Subscriptions"
+            channels:
+              # Tech and Self-hosting
+              - UCg6gPGh8HU2U01vaFCAsvmQ  # Techno Tim
+              - UCZNhwA1B5YqiY1nLzmM0ZRg  # Hardware Haven
+              - UCVy16RS5eEDh8anP8j94G2A  # JEAHT
+              - UCOk-gHyjcWZNj3Br4oxwh0A  # Craft Computing
+              - UCg6gPGh8HU2U01vaFCAsvmQ  # Jeff Geerling
+              # Programming and Dev
+              - UC8butISFwT-Wl7EV0hUK0BQ  # freeCodeCamp
+              - UCsBjURrPoezykLs9EqgamOA  # Fireship
+              # Linux and Open Source
+              - UCVls1GmFKf6WlTraIb_IaJg  # DistroTube
+              - UC2eYFnH61tmytImy1mTYvhA  # Luke Smith
+            limit: 20
+            collapse-after: 10
+
+      # ========================================================================
+      # STREAMING CONTENT
+      # ========================================================================
+      - size: small
+        widgets:
+          # ------------------------------------------------------------------
+          # TWITCH STREAMS (EXPANDED VIEW)
+          # ------------------------------------------------------------------
+          - type: twitch-channels
+            title: "🎮 Live Streams"
+            channels:
+              - piratesoftware
+              - theprimeagen
+              - tsoding
+              - cohhcarnage
+              - lvndmark
+              - shroud
+              - summit1g
+            collapse-offline: false
 
 # ============================================================================
 # ENVIRONMENT VARIABLES REFERENCE
@@ -587,12 +1034,17 @@ pages:
 # Calendar:
 # - CALENDAR_URL: iCal/ICS calendar URL for maintenance schedule
 #
-# Optional:
+# Optional (Adopted from kyrilltje/Glance_Dashboard):
 # - GITHUB_TOKEN: GitHub personal access token (for higher API rate limits)
+# - PROXMOX_API_URL: Proxmox VE API endpoint (e.g., https://192.168.1.10:8006)
+# - PROXMOX_API_TOKEN: Proxmox API token (format: user@realm!tokenid=secret)
+# - GRAFANA_DASHBOARD_URL: Grafana dashboard iframe URL
+# - UPTIME_KUMA_URL: Uptime Kuma instance URL
+# - API_TOKEN: Generic API token for custom integrations
 #
 # Example docker-compose.yml environment section:
 # environment:
-#   - TZ=America/Los_Angeles
+#   - TZ=Asia/Dhaka
 #   - ADGUARD_URL=http://192.168.1.100:3000
 #   - ADGUARD_USERNAME=admin
 #   - ADGUARD_PASSWORD=${ADGUARD_PASSWORD}
@@ -605,6 +1057,7 @@ pages:
 #   - AUTH_SERVICE_URL=https://auth.yourdomain.com/health
 #   - ANALYTICS_URL=https://analytics.yourdomain.com/health
 #   - CALENDAR_URL=https://calendar.google.com/calendar/ical/xxx/basic.ics
+#   - GITHUB_TOKEN=${GITHUB_TOKEN}
 #
 # ============================================================================
 
@@ -618,10 +1071,12 @@ pages:
 #   --name glance \
 #   -p 8080:8080 \
 #   -v /path/to/glance.yaml:/app/config/glance.yaml \
+#   -v /var/run/docker.sock:/var/run/docker.sock:ro \
+#   -e TZ=Asia/Dhaka \
 #   glanceapp/glance
 #
-# Docker Compose:
-# ---------------
+# Docker Compose (with Docker socket for container monitoring):
+# -------------------------------------------------------------
 # version: '3.8'
 # services:
 #   glance:
@@ -631,8 +1086,9 @@ pages:
 #       - 8080:8080
 #     volumes:
 #       - ./glance.yaml:/app/config/glance.yaml
+#       - /var/run/docker.sock:/var/run/docker.sock:ro
 #     environment:
-#       - TZ=America/Los_Angeles
+#       - TZ=Asia/Dhaka
 #     restart: unless-stopped
 #
 # Reverse Proxy (Traefik):
@@ -642,6 +1098,12 @@ pages:
 #   - "traefik.http.routers.glance.rule=Host(`dashboard.example.com`)"
 #   - "traefik.http.routers.glance.entrypoints=websecure"
 #   - "traefik.http.routers.glance.tls.certresolver=letsencrypt"
+#
+# Reverse Proxy (Caddy):
+# ----------------------
+# dashboard.example.com {
+#   reverse_proxy glance:8080
+# }
 #
 # ============================================================================
 
@@ -676,5 +1138,70 @@ pages:
 #    - Check if URL is accessible from Glance container
 #    - Verify SSL certificates if using HTTPS
 #    - Set allow-insecure: true for self-signed certs
+#
+# 6. Docker containers not showing (adopted from kyrilltje patterns):
+#    - Verify Docker socket is mounted: /var/run/docker.sock:/var/run/docker.sock:ro
+#    - Check socket permissions (may need to add glance user to docker group)
+#    - Verify socket path in configuration matches mount
+#
+# 7. YouTube/Twitch widgets not loading:
+#    - YouTube uses RSS feeds which may have rate limits
+#    - Verify channel IDs are correct (use channel ID, not username)
+#    - Twitch requires valid channel names (case-sensitive)
+#
+# 8. Hacker News widget empty:
+#    - API endpoint may be temporarily unavailable
+#    - Check network access to news.ycombinator.com
+#    - Reduce limit if experiencing timeouts
+#
+# 9. Markets widget not updating:
+#    - Yahoo Finance API has rate limits
+#    - Verify symbol format (e.g., BTC-USD, AAPL)
+#    - Market data may be delayed during off-hours
+#
+# 10. Iframe widgets showing blank:
+#     - Target site may block embedding (X-Frame-Options)
+#     - Verify URL is accessible from browser
+#     - Some dashboards require authentication
+#
+# ============================================================================
+
+# ============================================================================
+# WIDGET REFERENCE (ADOPTED FROM KYRILLTJE/GLANCE_DASHBOARD)
+# ============================================================================
+#
+# This configuration includes the following widget types:
+#
+# Core Widgets:
+# - weather: Weather conditions and forecasts
+# - clock: Multi-timezone time display
+# - dns-stats: AdGuard Home DNS statistics
+# - system-info: Local system resource monitoring
+# - monitor: Service health checks
+# - calendar: iCal/ICS calendar integration
+#
+# Entertainment & Media (kyrilltje patterns):
+# - spotify: Now playing and recent tracks
+# - videos: YouTube video feeds
+# - twitch-channels: Twitch live streams
+# - markets: Stock and crypto prices
+#
+# News & Social:
+# - hacker-news: Hacker News top stories
+# - rss: RSS feed aggregator
+# - reddit: Reddit subreddit posts
+# - releases: GitHub release tracker
+#
+# Productivity:
+# - bookmarks: Quick access links
+# - search: Search bar with custom bangs
+# - docker-containers: Docker container status
+#
+# Custom Integration:
+# - custom-api: Template for custom API widgets
+# - iframe: Embed external dashboards
+#
+# For full widget documentation, see:
+# https://github.com/glanceapp/glance
 #
 # ============================================================================
